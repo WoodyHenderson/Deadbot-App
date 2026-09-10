@@ -1,16 +1,34 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DeadBot.Services;
 
 namespace DeadBot.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
+    private readonly OpenRouterClient openRouterClient;
+    private readonly List<OpenRouterMessage> messages =
+    [
+        new("system", "You are DeadBot, a helpful assistant for the game Deadlock. Answer clearly and say when you are uncertain. Local knowledgebase context is not connected yet, so never claim that an answer is grounded in local files.")
+    ];
+    private bool hasConversation;
+
     public MainViewModel()
+        : this(new OpenRouterClient(new HttpClient()))
     {
+    }
+
+    public MainViewModel(OpenRouterClient openRouterClient)
+    {
+        this.openRouterClient = openRouterClient;
         KnowledgebaseStatus = Directory.Exists(KnowledgebasePath)
             ? "Downloaded"
             : "Not downloaded";
@@ -102,17 +120,81 @@ public partial class MainViewModel : ViewModelBase
         private set => SetProperty(ref knowledgebaseStatus, value);
     }
 
+    [ObservableProperty]
+    private bool isSending;
+
     [RelayCommand]
-    private void Send()
+    private async Task SendAsync()
     {
-        if (string.IsNullOrWhiteSpace(Prompt))
+        if (IsSending)
+            return;
+
+        var question = Prompt.Trim();
+        if (string.IsNullOrWhiteSpace(question))
         {
             Status = "Enter a question first";
             return;
         }
 
-        Conversation = $"You\n{Prompt}\n\nDeadBot\nYour question is queued. Knowledgebase retrieval and OpenRouter integration are next.\n\n{Conversation}";
-        Prompt = string.Empty;
-        Status = "Ready for OpenRouter integration";
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            Status = "Enter your OpenRouter API key first";
+            return;
+        }
+
+        IsSending = true;
+        Status = $"Waiting for {SelectedModel}…";
+
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            var requestMessages = new List<OpenRouterMessage>(messages)
+            {
+                new("user", question)
+            };
+
+            var answer = await openRouterClient.SendChatAsync(
+                ApiKey,
+                SelectedModel,
+                requestMessages,
+                timeout.Token);
+
+            messages.Add(new OpenRouterMessage("user", question));
+            messages.Add(new OpenRouterMessage("assistant", answer));
+            AppendExchange(question, answer);
+            Prompt = string.Empty;
+            Status = $"Response received from {SelectedModel}";
+        }
+        catch (OpenRouterException ex)
+        {
+            Status = ex.StatusCode switch
+            {
+                HttpStatusCode.Unauthorized => "OpenRouter rejected the API key",
+                HttpStatusCode.PaymentRequired => "OpenRouter reports insufficient credits",
+                HttpStatusCode.TooManyRequests => "OpenRouter rate limit reached — try again shortly",
+                _ => $"OpenRouter error: {ex.Message}"
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            Status = "The request timed out after 60 seconds";
+        }
+        catch (HttpRequestException ex)
+        {
+            Status = $"Could not reach OpenRouter: {ex.Message}";
+        }
+        finally
+        {
+            IsSending = false;
+        }
+    }
+
+    private void AppendExchange(string question, string answer)
+    {
+        var exchange = $"You\n{question}\n\nDeadBot\n{answer}";
+        Conversation = hasConversation
+            ? $"{Conversation}\n\n────────────────────────\n\n{exchange}"
+            : exchange;
+        hasConversation = true;
     }
 }

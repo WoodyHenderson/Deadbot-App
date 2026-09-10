@@ -69,7 +69,7 @@
                     <TextBlock Classes="secondary" Text="Your Deadlock knowledge companion" FontSize="13" />
                 </StackPanel>
                 <Border Grid.Column="2" Background="#23352F" CornerRadius="16" Padding="12,6" VerticalAlignment="Center">
-                    <TextBlock Text="UI preview" Foreground="#9AEBDD" FontSize="12" FontWeight="SemiBold" />
+                    <TextBlock Text="OpenRouter ready" Foreground="#9AEBDD" FontSize="12" FontWeight="SemiBold" />
                 </Border>
             </Grid>
         </Border>
@@ -90,7 +90,7 @@
                                 </Border>
                             </StackPanel>
                             <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" />
-                            <TextBlock Classes="secondary" Text="Model availability is not yet verified." FontSize="12" />
+                            <TextBlock Classes="secondary" Text="Requests are sent through your OpenRouter account." FontSize="12" />
                             <TextBlock Classes="label" Text="OpenRouter API key" Margin="0,16,0,0" />
                             <TextBox Text="{Binding ApiKey}" PasswordChar="●" Watermark="Paste your API key" />
                             <TextBlock Classes="secondary" Text="Held in memory for this session only. Not saved to disk." FontSize="12" />
@@ -130,9 +130,11 @@
                         <TextBox Grid.Row="1" Text="{Binding Prompt}" AcceptsReturn="True" TextWrapping="Wrap"
                                  MinHeight="90" MaxHeight="150" ScrollViewer.VerticalScrollBarVisibility="Auto"
                                  Watermark="e.g. How does spirit power affect hero abilities?" />
-                        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                        <Grid Grid.Row="2" ColumnDefinitions="*,120,Auto" ColumnSpacing="14">
                             <TextBlock Classes="secondary" Text="{Binding Status}" FontSize="12" VerticalAlignment="Center" />
-                            <Button Grid.Column="1" Classes="send" Content="Send question →" Command="{Binding SendCommand}" />
+                            <ProgressBar Grid.Column="1" IsVisible="{Binding IsSending}" IsIndeterminate="True"
+                                         Height="4" VerticalAlignment="Center" />
+                            <Button Grid.Column="2" Classes="send" Content="Send question →" Command="{Binding SendCommand}" />
                         </Grid>
                     </Grid>
                 </Border>
