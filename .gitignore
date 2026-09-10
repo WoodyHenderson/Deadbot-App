@@ -7,8 +7,8 @@
 !.env.example
 
 # Build output
-/bin/
-/obj/
+**/bin/
+**/obj/
 
 # macOS metadata
 .DS_Store

@@ -93,12 +93,12 @@
                             <TextBlock Classes="secondary" Text="Requests are sent through your OpenRouter account." FontSize="12" />
                             <TextBlock Classes="label" Text="OpenRouter API key" Margin="0,16,0,0" />
                             <TextBox Text="{Binding ApiKey}" PasswordChar="●" Watermark="Paste your API key" />
-                            <TextBlock Classes="secondary" Text="Held in memory for this session only. Not saved to disk." FontSize="12" />
+                            <TextBlock Classes="secondary" Text="Key held in memory only. Sending shares your conversation and selected knowledgebase files with OpenRouter and its model provider." FontSize="12" />
                             <Border Background="#111A24" BorderBrush="#344356" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,18,0,0">
                                 <StackPanel Spacing="8">
                                     <TextBlock Classes="label" Text="Knowledgebase" />
                                     <TextBlock Text="{Binding KnowledgebaseStatus}" Foreground="#9AEBDD" FontSize="12" />
-                                    <TextBlock Classes="secondary" Text="Download the public repository locally for context and source references." FontSize="12" />
+                                    <TextBlock Classes="secondary" Text="Core rules plus named heroes/items. Patch search and build discovery are not implemented yet." FontSize="12" />
                                     <Button Content="Download data" Command="{Binding DownloadKnowledgebaseCommand}" Margin="0,6,0,0" />
                                     <TextBlock Classes="secondary" Text="{Binding KnowledgebasePath}" FontSize="10" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
@@ -117,7 +117,17 @@
 
                 <Border Grid.Row="1" Background="#19222E" BorderBrush="#2D394A" BorderThickness="1" CornerRadius="14" Padding="22">
                     <Grid RowDefinitions="Auto,*" RowSpacing="18">
-                        <TextBlock Text="CONVERSATION" Foreground="#9AEBDD" FontWeight="SemiBold" FontSize="12" />
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="CONVERSATION" Foreground="#9AEBDD" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Content="New chat" Command="{Binding NewConversationCommand}" />
+                            </Grid>
+                            <Expander Header="Sources selected for latest request" HorizontalAlignment="Stretch">
+                                <ScrollViewer MaxHeight="140" HorizontalScrollBarVisibility="Disabled">
+                                    <SelectableTextBlock Text="{Binding RetrievedSources}" TextWrapping="Wrap" FontSize="12" Foreground="#B6C2D2" />
+                                </ScrollViewer>
+                            </Expander>
+                        </StackPanel>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <SelectableTextBlock Text="{Binding Conversation}" Foreground="#E2EAF4" TextWrapping="Wrap" FontSize="15" LineHeight="26" />
                         </ScrollViewer>

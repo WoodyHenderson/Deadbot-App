@@ -4,7 +4,7 @@ An open-source C# desktop chat GUI for asking questions about Deadlock using the
 public [Deadlock knowledgebase](https://github.com/WoodyHenderson/Deadlock-Public-Data)
 and models accessed through [OpenRouter](https://openrouter.ai/).
 
-> **Status: planning / pre-implementation.** There is no runnable application yet.
+> **Status: early desktop prototype.** OpenRouter chat and phase-one knowledgebase context are implemented; retrieval coverage and model availability still need evaluation.
 
 ## Planned MVP
 
@@ -47,7 +47,28 @@ before redistribution.
 
 ## Development
 
-Build and run instructions will be added when the first project is scaffolded.
+With the .NET 8 SDK installed, run `dotnet run` from this directory.
+Git must be installed for the app's **Download data** button. Data is stored under
+`%LOCALAPPDATA%\DeadBot\knowledgebase` on Windows.
+
+### Phase-one context
+
+Each chat request includes all Markdown/YAML documents under `general/` and `data/`,
+plus complete Markdown/YAML files for explicitly named hero/item folders. Names
+are case-insensitive with punctuation normalized; aliases, typos, ability-name
+lookup, build-candidate discovery, and patch retrieval are not implemented.
+Entities from successful prior user turns remain included until **New chat**.
+The expandable sources panel lists the files selected for the latest attempt.
+Selected evidence and conversation text are sent to OpenRouter and its provider.
+
+Missing core folders and evidence above 250,000 characters block the request rather
+than silently dropping sources. This is a local character guard, not a model token
+budget; model context limits can still reject requests. Citations are requested
+using relative paths but are not yet automatically verified. Data freshness is
+not verified against the live game.
+
+Run offline retrieval checks with `dotnet run --project tests/ContextChecks`.
+These checks do not contact OpenRouter or require an API key.
 The immediate development order is:
 
 1. Desktop application shell and secure local key entry.

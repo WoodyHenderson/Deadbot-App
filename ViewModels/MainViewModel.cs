@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +16,22 @@ namespace DeadBot.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly OpenRouterClient openRouterClient;
-    private readonly List<OpenRouterMessage> messages =
-    [
-        new("system", "You are DeadBot, a helpful assistant for the game Deadlock. Answer clearly and say when you are uncertain. Local knowledgebase context is not connected yet, so never claim that an answer is grounded in local files.")
-    ];
+    private readonly KnowledgebaseContextBuilder contextBuilder = new();
+    private readonly List<OpenRouterMessage> messages = new();
+
+    [ObservableProperty]
+    private string retrievedSources = "No sources selected yet. Core rules and named heroes/items will be sent to OpenRouter with your question.";
+
+    [RelayCommand]
+    private void NewConversation()
+    {
+        if (IsSending) return;
+        messages.Clear();
+        hasConversation = false;
+        Conversation = "New conversation. Ask about Deadlock.";
+        RetrievedSources = "No sources selected yet.";
+        Status = "Ready";
+    }
     private bool hasConversation;
 
     public MainViewModel()
@@ -62,7 +75,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task DownloadKnowledgebaseAsync()
     {
-        if (IsDownloading)
+        if (IsDownloading || IsSending)
             return;
 
         IsDownloading = true;
@@ -126,7 +139,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task SendAsync()
     {
-        if (IsSending)
+        if (IsSending || IsDownloading)
             return;
 
         var question = Prompt.Trim();
@@ -148,10 +161,18 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-            var requestMessages = new List<OpenRouterMessage>(messages)
+            RetrievedSources = "Selecting local evidence…";
+            var context = await contextBuilder.BuildAsync(KnowledgebasePath, question,
+                messages.Where(message => message.Role == "user").Select(message => message.Content), timeout.Token);
+            RetrievedSources = $"Selected for this request: {context.Sources.Count} files, {context.Text.Length:N0} characters (not tokens).\n"
+                + string.Join("\n", context.Sources);
+            var requestMessages = new List<OpenRouterMessage>
             {
-                new("user", question)
+                new("system", KnowledgebaseContextBuilder.Instructions),
+                new("user", context.Text)
             };
+            requestMessages.AddRange(messages);
+            requestMessages.Add(new("user", question));
 
             var answer = await openRouterClient.SendChatAsync(
                 ApiKey,
@@ -182,6 +203,11 @@ public partial class MainViewModel : ViewModelBase
         catch (HttpRequestException ex)
         {
             Status = $"Could not reach OpenRouter: {ex.Message}";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            RetrievedSources = "Evidence could not be prepared; no chat request was sent.";
+            Status = $"Knowledgebase error: {ex.Message}";
         }
         finally
         {
