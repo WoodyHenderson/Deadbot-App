@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using DeadBot.Models;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -27,12 +29,17 @@ public partial class MainViewModel : ViewModelBase
     {
         if (IsSending) return;
         messages.Clear();
+        ChatMessages.Clear();
         hasConversation = false;
         Conversation = "New conversation. Ask about Deadlock.";
         RetrievedSources = "No sources selected yet.";
         Status = "Ready";
     }
     private bool hasConversation;
+    public ObservableCollection<ChatMessage> ChatMessages { get; } = new()
+    {
+        new ChatMessage("DeadBot", "## Welcome to DeadBot\nAsk about **heroes, items, or mechanics**. Answers use local knowledgebase evidence when available.\n\nSource references appear alongside the answer; expand the sources panel to inspect selected files.")
+    };
 
     public MainViewModel()
         : this(new OpenRouterClient(new HttpClient()))
@@ -217,6 +224,9 @@ public partial class MainViewModel : ViewModelBase
 
     private void AppendExchange(string question, string answer)
     {
+        if (!hasConversation) ChatMessages.Clear();
+        ChatMessages.Add(new ChatMessage("You", question));
+        ChatMessages.Add(new ChatMessage("DeadBot", answer));
         var exchange = $"You\n{question}\n\nDeadBot\n{answer}";
         Conversation = hasConversation
             ? $"{Conversation}\n\n────────────────────────\n\n{exchange}"

@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:DeadBot.ViewModels"
+        xmlns:views="using:DeadBot.Views"
+        xmlns:models="using:DeadBot.Models"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="780"
@@ -129,7 +131,19 @@
                             </Expander>
                         </StackPanel>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                            <SelectableTextBlock Text="{Binding Conversation}" Foreground="#E2EAF4" TextWrapping="Wrap" FontSize="15" LineHeight="26" />
+                            <ItemsControl ItemsSource="{Binding ChatMessages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:ChatMessage">
+                                        <Border Background="#141E29" BorderBrush="#344356" BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+                                            <StackPanel Spacing="12">
+                                                <TextBlock Text="{Binding Role}" Foreground="#9AEBDD" FontWeight="SemiBold" FontSize="13" />
+                                                <SelectableTextBlock IsVisible="{Binding IsUser}" Text="{Binding Content}" Foreground="#E2EAF4" TextWrapping="Wrap" FontSize="15" LineHeight="25" />
+                                                <views:MarkdownMessage IsVisible="{Binding IsAssistant}" Markdown="{Binding Content}" HorizontalContentAlignment="Stretch" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </ScrollViewer>
                     </Grid>
                 </Border>
