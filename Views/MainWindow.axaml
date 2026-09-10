@@ -81,7 +81,14 @@
                         <StackPanel Spacing="10">
                             <TextBlock Text="Workspace" FontSize="18" FontWeight="SemiBold" />
                             <TextBlock Classes="secondary" Text="Configure your assistant." Margin="0,0,0,16" />
-                            <TextBlock Classes="label" Text="Model" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Classes="label" Text="Model" />
+                                <Border Background="#344356" CornerRadius="9" Width="18" Height="18"
+                                        VerticalAlignment="Center" ToolTip.Tip="z-ai/glm-5.3-flash: lower-cost, faster reasoning.&#10;&#10;openai/gpt-5.6-luna: stronger reasoning for harder questions, but more expensive.&#10;&#10;Pricing and availability should be verified before use.">
+                                    <TextBlock Text="i" Foreground="#9AEBDD" FontWeight="Bold" FontSize="12"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </StackPanel>
                             <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" />
                             <TextBlock Classes="secondary" Text="Model availability is not yet verified." FontSize="12" />
                             <TextBlock Classes="label" Text="OpenRouter API key" Margin="0,16,0,0" />
