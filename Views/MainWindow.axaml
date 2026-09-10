@@ -3,54 +3,130 @@
         xmlns:vm="using:DeadBot.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="780"
         x:Class="DeadBot.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
         Title="DeadBot — Deadlock Assistant"
-        MinWidth="850" MinHeight="550">
+        Width="1180" Height="780" MinWidth="900" MinHeight="650"
+        Background="#10151D" Foreground="#F0F4FA"
+        FontFamily="Inter, Segoe UI, sans-serif" FontSize="14">
 
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
-        <Border Grid.ColumnSpan="2" Background="#171923" Padding="24,18">
-            <Grid ColumnDefinitions="*,Auto">
-                <StackPanel>
-                    <TextBlock Text="DEADBOT" FontSize="22" FontWeight="Bold" />
-                    <TextBlock Text="Deadlock knowledge assistant" Opacity="0.65" />
+    <Window.Styles>
+        <Style Selector="TextBlock.secondary">
+            <Setter Property="Foreground" Value="#B6C2D2" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="#DDE6F1" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#10151D" />
+            <Setter Property="Foreground" Value="#F0F4FA" />
+            <Setter Property="BorderBrush" Value="#49576A" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="MinHeight" Value="44" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="#10151D" />
+            <Setter Property="Foreground" Value="#F0F4FA" />
+            <Setter Property="BorderBrush" Value="#49576A" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="MinHeight" Value="44" />
+        </Style>
+        <Style Selector="Button.send">
+            <Setter Property="Background" Value="#70DEC9" />
+            <Setter Property="Foreground" Value="#102923" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="22,12" />
+        </Style>
+        <Style Selector="Button.send:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#9AEBDD" />
+            <Setter Property="Foreground" Value="#102923" />
+        </Style>
+        <Style Selector="Button.send:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#50C4AE" />
+            <Setter Property="Foreground" Value="#102923" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+        <Border Padding="28,22" Background="#151D28" BorderBrush="#2D394A" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Width="46" Height="46" CornerRadius="13" Background="#70DEC9" Margin="0,0,14,0">
+                    <TextBlock Text="D" FontSize="26" FontWeight="Bold" Foreground="#102923"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock Text="DeadBot" FontSize="23" FontWeight="Bold" />
+                    <TextBlock Classes="secondary" Text="Your Deadlock knowledge companion" FontSize="13" />
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="LOCAL DESKTOP APP" VerticalAlignment="Center" Opacity="0.55" />
+                <Border Grid.Column="2" Background="#23352F" CornerRadius="16" Padding="12,6" VerticalAlignment="Center">
+                    <TextBlock Text="UI preview" Foreground="#9AEBDD" FontSize="12" FontWeight="SemiBold" />
+                </Border>
             </Grid>
         </Border>
 
-        <Border Grid.Row="1" Background="#20222D" Padding="20">
-            <StackPanel Spacing="16">
-                <TextBlock Text="SETTINGS" FontSize="12" FontWeight="Bold" Opacity="0.6" />
-                <TextBlock Text="Model" />
-                <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" />
-                <TextBlock Text="OpenRouter API key" Margin="0,8,0,0" />
-                <TextBox Text="{Binding ApiKey}" PasswordChar="●" Watermark="Entered locally" />
-                <TextBlock Text="Your key stays on this device and is never committed." TextWrapping="Wrap" FontSize="12" Opacity="0.6" />
-                <Border Background="#292C39" Padding="12" Margin="0,12,0,0">
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="Knowledgebase" FontWeight="SemiBold" />
-                        <TextBlock Text="Public Deadlock data will be loaded locally." TextWrapping="Wrap" FontSize="12" Opacity="0.65" />
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </Border>
+        <Grid Grid.Row="1" ColumnDefinitions="292,*" Margin="24" ColumnSpacing="24">
+            <Border Background="#19222E" BorderBrush="#2D394A" BorderThickness="1" CornerRadius="14" Padding="20">
+                <Grid RowDefinitions="*,Auto">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Workspace" FontSize="18" FontWeight="SemiBold" />
+                            <TextBlock Classes="secondary" Text="Configure your assistant." Margin="0,0,0,16" />
+                            <TextBlock Classes="label" Text="Model" />
+                            <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" />
+                            <TextBlock Classes="secondary" Text="Model availability is not yet verified." FontSize="12" />
+                            <TextBlock Classes="label" Text="OpenRouter API key" Margin="0,16,0,0" />
+                            <TextBox Text="{Binding ApiKey}" PasswordChar="●" Watermark="Paste your API key" />
+                            <TextBlock Classes="secondary" Text="Held in memory for this session only. Not saved to disk." FontSize="12" />
+                            <Border Background="#111A24" BorderBrush="#344356" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,18,0,0">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Classes="label" Text="Knowledgebase" />
+                                    <TextBlock Text="Not connected" Foreground="#F0CE88" FontSize="12" />
+                                    <TextBlock Classes="secondary" Text="Local public Deadlock data will provide context and source references." FontSize="12" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <TextBlock Grid.Row="1" Classes="secondary" Text="Unofficial community project.&#10;Not affiliated with Valve." FontSize="12" Margin="0,20,0,0" />
+                </Grid>
+            </Border>
 
-        <Grid Grid.Column="1" Grid.Row="1" Margin="28" RowDefinitions="*,Auto,Auto" RowSpacing="14">
-            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-                <TextBlock Text="{Binding Conversation}" TextWrapping="Wrap" FontSize="16" LineHeight="26" />
-            </ScrollViewer>
-            <TextBox Grid.Row="1" Text="{Binding Prompt}" AcceptsReturn="True" MinHeight="90"
-                     Watermark="Ask anything about heroes, items, builds, or mechanics..." />
-            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
-                <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Opacity="0.6" />
-                <Button Grid.Column="1" Content="Send question" Command="{Binding SendCommand}" Padding="22,10" />
+            <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="18">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Ask about Deadlock" FontSize="26" FontWeight="SemiBold" />
+                    <TextBlock Classes="secondary" Text="Heroes, items, builds, and mechanics — all in one conversation." />
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="#19222E" BorderBrush="#2D394A" BorderThickness="1" CornerRadius="14" Padding="22">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="18">
+                        <TextBlock Text="CONVERSATION" Foreground="#9AEBDD" FontWeight="SemiBold" FontSize="12" />
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <SelectableTextBlock Text="{Binding Conversation}" Foreground="#E2EAF4" TextWrapping="Wrap" FontSize="15" LineHeight="26" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="2" Background="#19222E" BorderBrush="#344356" BorderThickness="1" CornerRadius="14" Padding="16">
+                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
+                        <TextBlock Classes="label" Text="Your question" />
+                        <TextBox Grid.Row="1" Text="{Binding Prompt}" AcceptsReturn="True" TextWrapping="Wrap"
+                                 MinHeight="90" MaxHeight="150" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 Watermark="e.g. How does spirit power affect hero abilities?" />
+                        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                            <TextBlock Classes="secondary" Text="{Binding Status}" FontSize="12" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Classes="send" Content="Send question →" Command="{Binding SendCommand}" />
+                        </Grid>
+                    </Grid>
+                </Border>
             </Grid>
         </Grid>
     </Grid>
