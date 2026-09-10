@@ -1,0 +1,57 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DeadBot.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+        x:Class="DeadBot.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="DeadBot — Deadlock Assistant"
+        MinWidth="850" MinHeight="550">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
+        <Border Grid.ColumnSpan="2" Background="#171923" Padding="24,18">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                    <TextBlock Text="DEADBOT" FontSize="22" FontWeight="Bold" />
+                    <TextBlock Text="Deadlock knowledge assistant" Opacity="0.65" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="LOCAL DESKTOP APP" VerticalAlignment="Center" Opacity="0.55" />
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Background="#20222D" Padding="20">
+            <StackPanel Spacing="16">
+                <TextBlock Text="SETTINGS" FontSize="12" FontWeight="Bold" Opacity="0.6" />
+                <TextBlock Text="Model" />
+                <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" />
+                <TextBlock Text="OpenRouter API key" Margin="0,8,0,0" />
+                <TextBox Text="{Binding ApiKey}" PasswordChar="●" Watermark="Entered locally" />
+                <TextBlock Text="Your key stays on this device and is never committed." TextWrapping="Wrap" FontSize="12" Opacity="0.6" />
+                <Border Background="#292C39" Padding="12" Margin="0,12,0,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Knowledgebase" FontWeight="SemiBold" />
+                        <TextBlock Text="Public Deadlock data will be loaded locally." TextWrapping="Wrap" FontSize="12" Opacity="0.65" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Grid.Row="1" Margin="28" RowDefinitions="*,Auto,Auto" RowSpacing="14">
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                <TextBlock Text="{Binding Conversation}" TextWrapping="Wrap" FontSize="16" LineHeight="26" />
+            </ScrollViewer>
+            <TextBox Grid.Row="1" Text="{Binding Prompt}" AcceptsReturn="True" MinHeight="90"
+                     Watermark="Ask anything about heroes, items, builds, or mechanics..." />
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Opacity="0.6" />
+                <Button Grid.Column="1" Content="Send question" Command="{Binding SendCommand}" Padding="22,10" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
