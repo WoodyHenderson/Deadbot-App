@@ -49,6 +49,7 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(OpenRouterClient openRouterClient)
     {
         this.openRouterClient = openRouterClient;
+        ApiKey = EnvironmentConfiguration.GetOpenRouterApiKey();
         KnowledgebaseStatus = Directory.Exists(KnowledgebasePath)
             ? "Downloaded"
             : "Not downloaded";
