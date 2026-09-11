@@ -168,7 +168,7 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(180));
             RetrievedSources = "Selecting local evidence…";
             var context = await contextBuilder.BuildAsync(KnowledgebasePath, question,
                 messages.Where(message => message.Role == "user").Select(message => message.Content), timeout.Token);
@@ -206,7 +206,7 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (OperationCanceledException)
         {
-            Status = "The request timed out after 60 seconds";
+            Status = "The request timed out after 180 seconds";
         }
         catch (HttpRequestException ex)
         {
