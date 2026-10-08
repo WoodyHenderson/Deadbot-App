@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DeadBot.Models;
-using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Linq;
 using System.Net.Http;
@@ -90,43 +90,78 @@ public partial class MainViewModel : ViewModelBase
         Status = "Downloading public Deadlock data…";
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(KnowledgebasePath)!);
-            var isClone = Directory.Exists(Path.Combine(KnowledgebasePath, ".git"));
-            var arguments = isClone
-                ? $"-C \"{KnowledgebasePath}\" pull --ff-only"
-                : $"clone --depth 1 https://github.com/WoodyHenderson/Deadlock-Public-Data.git \"{KnowledgebasePath}\"";
-
-            using var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = "git",
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            });
-
-            if (process is null)
-                throw new InvalidOperationException("Git could not be started.");
-
-            var error = await process.StandardError.ReadToEndAsync();
-            await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
-            if (process.ExitCode != 0)
-                throw new InvalidOperationException(string.IsNullOrWhiteSpace(error) ? "Git clone failed." : error.Trim());
+            await DownloadKnowledgebaseZipAsync();
 
             KnowledgebaseStatus = "Downloaded";
-            Status = isClone ? "Knowledgebase updated" : "Knowledgebase downloaded";
+            Status = "Knowledgebase downloaded";
         }
-        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or HttpRequestException)
         {
-            Status = ex.Message.Contains("git", StringComparison.OrdinalIgnoreCase)
-                ? "Git was not found. Install Git and try again."
-                : $"Download failed: {ex.Message}";
+            Status = $"Download failed: {ex.Message}";
         }
         finally
         {
             IsDownloading = false;
+        }
+    }
+
+    private async Task DownloadKnowledgebaseZipAsync()
+    {
+        var parent = Path.GetDirectoryName(KnowledgebasePath)!;
+        Directory.CreateDirectory(parent);
+
+        var tempRoot = Path.Combine(parent, $"knowledgebase-download-{Path.GetRandomFileName()}");
+        var extractRoot = Path.Combine(tempRoot, "extract");
+        var stagingPath = Path.Combine(parent, $"knowledgebase-staging-{Path.GetRandomFileName()}");
+        string? backupPath = null;
+
+        try
+        {
+            Directory.CreateDirectory(tempRoot);
+            var zipPath = Path.Combine(tempRoot, "knowledgebase.zip");
+
+            using (var httpClient = new HttpClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Get,
+                       "https://codeload.github.com/WoodyHenderson/Deadlock-Public-Data/zip/refs/heads/main"))
+            {
+                request.Headers.UserAgent.ParseAdd("DeadBot/1.0");
+                using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+                await using var network = await response.Content.ReadAsStreamAsync();
+                await using var file = File.Create(zipPath);
+                await network.CopyToAsync(file);
+            }
+
+            ZipFile.ExtractToDirectory(zipPath, extractRoot);
+            var extractedDirectories = Directory.GetDirectories(extractRoot);
+            if (extractedDirectories.Length != 1)
+                throw new InvalidOperationException("Downloaded knowledgebase archive had an unexpected layout.");
+
+            Directory.Move(extractedDirectories[0], stagingPath);
+
+            if (Directory.Exists(KnowledgebasePath))
+            {
+                backupPath = Path.Combine(parent, $"knowledgebase-backup-{Path.GetRandomFileName()}");
+                Directory.Move(KnowledgebasePath, backupPath);
+            }
+
+            Directory.Move(stagingPath, KnowledgebasePath);
+
+            if (backupPath is not null && Directory.Exists(backupPath))
+                Directory.Delete(backupPath, recursive: true);
+        }
+        catch
+        {
+            if (!Directory.Exists(KnowledgebasePath) && backupPath is not null && Directory.Exists(backupPath))
+                Directory.Move(backupPath, KnowledgebasePath);
+            throw;
+        }
+        finally
+        {
+            if (Directory.Exists(stagingPath))
+                Directory.Delete(stagingPath, recursive: true);
+            if (Directory.Exists(tempRoot))
+                Directory.Delete(tempRoot, recursive: true);
         }
     }
 
