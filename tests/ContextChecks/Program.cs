@@ -33,6 +33,9 @@ try
     var punctuation = await builder.BuildAsync(root, "Mo & Krill?", []);
     Check(punctuation.Sources.Contains("heroes/mo-and-krill/mo-and-krill.md"), "punctuation normalization");
     Check(named.Text.Contains("SOURCE: heroes/haze/haze.yaml"), "stable path citation labels");
+    Put("general/large.md", new string('a', 300_000));
+    var larger = await builder.BuildAsync(root, "Haze", []);
+    Check(larger.Text.Length > 250_000, "reference payload above the old limit is accepted");
     Put("general/large.md", new string('a', KnowledgebaseContextBuilder.MaximumCharacters));
     try { await builder.BuildAsync(root, "Haze", []); throw new Exception("limit not enforced"); }
     catch (InvalidOperationException) { Console.WriteLine("PASS: oversized evidence rejected"); }

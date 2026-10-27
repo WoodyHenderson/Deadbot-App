@@ -15,7 +15,7 @@ public sealed record KnowledgebaseContext(string Text, IReadOnlyList<string> Sou
 public sealed class KnowledgebaseContextBuilder
 {
     // A local payload guard, not a claim about any model's tokenizer or context window.
-    public const int MaximumCharacters = 250_000;
+    public const int MaximumCharacters = 500_000;
 
     public const string Instructions = """
         You are DeadBot, a Deadlock assistant. Base game-specific factual claims only on
@@ -78,7 +78,8 @@ public sealed class KnowledgebaseContextBuilder
     }
 
     private static InvalidOperationException TooLarge() => new(
-        "Selected evidence exceeds the local size limit. Start a new conversation or ask about fewer entities.");
+        $"Loaded reference files exceed the app's {MaximumCharacters:N0}-character safety limit (not the question length or a model-reported limit). " +
+        "Start a new conversation to clear previously selected heroes/items, or ask about fewer entities.");
 
     private static bool IsDocument(string path) => Path.GetExtension(path).ToLowerInvariant()
         is ".md" or ".yaml" or ".yml";
