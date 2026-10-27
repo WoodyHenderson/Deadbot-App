@@ -76,6 +76,11 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string status = "Ready — no request has been sent";
 
+    partial void OnStatusChanged(string value)
+    {
+        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {value}");
+    }
+
     public string KnowledgebasePath { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "DeadBot", "knowledgebase");
@@ -88,6 +93,7 @@ public partial class MainViewModel : ViewModelBase
 
         IsDownloading = true;
         Status = "Downloading public Deadlock data…";
+        Console.WriteLine($"Knowledgebase destination: {KnowledgebasePath}");
         try
         {
             await DownloadKnowledgebaseZipAsync();
@@ -97,6 +103,7 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or HttpRequestException)
         {
+            Console.Error.WriteLine(ex);
             Status = $"Download failed: {ex.Message}";
         }
         finally
